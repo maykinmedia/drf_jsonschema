@@ -1,6 +1,10 @@
+import importlib
+import warnings
+
 import pytest
 from rest_framework import serializers
 
+import drf_jsonschema_serializer.fields
 from drf_jsonschema_serializer import JSONSchemaField, SerializerJSONField
 
 schema = {
@@ -18,6 +22,12 @@ format_schema = {
 def test_valid_json_field():
     field = JSONSchemaField(schema=schema)
     assert field.to_internal_value({"a": "foo", "b": 3.1}) == {"a": "foo", "b": 3.1}
+
+
+def test_json_field_import_does_not_warn_about_refresolver():
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        importlib.reload(drf_jsonschema_serializer.fields)
 
 
 def test_invalid_json_field():

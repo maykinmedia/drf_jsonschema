@@ -1,6 +1,6 @@
-from typing import Type, TypeVar
+from typing import TYPE_CHECKING, Type, TypeVar
 
-from jsonschema import Draft202012Validator, FormatChecker, RefResolver
+from jsonschema import Draft202012Validator, FormatChecker
 from jsonschema.exceptions import ValidationError as JSONSchemaValidationError
 from rest_framework import serializers
 
@@ -9,6 +9,9 @@ from .convert import to_jsonschema
 T = TypeVar("T")
 
 _DEFAULT = object()
+
+if TYPE_CHECKING:
+    from jsonschema import RefResolver
 
 
 class JSONSchemaField(serializers.Field):
@@ -25,7 +28,7 @@ class JSONSchemaField(serializers.Field):
     def __init__(
         self,
         schema: dict,
-        resolver: RefResolver | None = None,
+        resolver: "RefResolver | None" = None,
         format_checker: FormatChecker | object | None = _DEFAULT,
         *args,
         **kwargs,
@@ -35,8 +38,10 @@ class JSONSchemaField(serializers.Field):
         self.schema = schema
         if format_checker is _DEFAULT:
             format_checker = FormatChecker()
-        self.validator = Draft202012Validator(
-            schema, resolver, format_checker  # type: ignore
+        self.validator = Draft202012Validator(  # type: ignore
+            schema,
+            resolver=resolver,
+            format_checker=format_checker,
         )
 
     def to_representation(self, obj: T) -> T:
